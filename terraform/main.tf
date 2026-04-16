@@ -59,7 +59,7 @@ module "eks" {
     }
   }
 
-  manage_aws_auth_configmap = true
+  manage_aws_auth_configmap = false
 }
 
 resource "aws_ecr_repository" "app_repo" {
