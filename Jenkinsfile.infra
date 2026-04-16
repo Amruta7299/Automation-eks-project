@@ -32,7 +32,7 @@ pipeline {
             steps {
                 dir('terraform') {
                     // Soft fail allows the pipeline to continue even if vulnerabilities are found
-                    sh 'checkov -d . --soft-fail'
+                    sh '/root/.local/bin/checkov -d . --soft-fail'
                 }
             }
         }
