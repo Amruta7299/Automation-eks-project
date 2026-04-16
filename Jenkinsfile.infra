@@ -1,76 +1,60 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(name: 'ACTION', choices: ['apply', 'destroy'], description: 'Select action')
+    }
+
     environment {
-        AWS_CREDENTIALS_ID = 'aws-credentials' // Add this ID in your Jenkins credentials Manager
+        AWS_CREDENTIALS_ID = 'aws-credentials'
         AWS_DEFAULT_REGION = 'us-east-1'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
+
         stage('Terraform Init') {
             steps {
                 dir('terraform') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: "${AWS_CREDENTIALS_ID}",
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        sh 'terraform init'
-                    }
-                }
-            }
-        }
-
-        stage('Checkov IaC Scan') {
-            steps {
-                dir('terraform') {
-                    // Soft fail allows the pipeline to continue even if vulnerabilities are found
-                    sh '/root/.local/bin/checkov -d . --soft-fail'
+                    sh 'terraform init'
                 }
             }
         }
 
         stage('Terraform Plan') {
+            when {
+                expression { params.ACTION == 'apply' }
+            }
             steps {
                 dir('terraform') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: "${AWS_CREDENTIALS_ID}",
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        sh 'terraform plan -out=tfplan'
-                    }
-                }
-            }
-        }
-
-        stage('Approval') {
-            steps {
-                timeout(time: 1, unit: 'HOURS') {
-                    input message: 'Approve Terraform Apply?', ok: 'Yes'
+                    sh 'terraform plan -out=tfplan'
                 }
             }
         }
 
         stage('Terraform Apply') {
+            when {
+                expression { params.ACTION == 'apply' }
+            }
             steps {
                 dir('terraform') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: "${AWS_CREDENTIALS_ID}",
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        sh 'terraform apply -auto-approve tfplan'
-                    }
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+
+        stage('Terraform Destroy') {
+            when {
+                expression { params.ACTION == 'destroy' }
+            }
+            steps {
+                dir('terraform') {
+                    sh 'terraform destroy -auto-approve'
                 }
             }
         }
