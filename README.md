@@ -132,10 +132,13 @@ git commit -m "Initial commit of DevOps Automation Project"
 ```
 
 ### Step 2: Install Prerequisites
+> [!NOTE]
+> The commands below are for a **Linux-based Jenkins Server (Ubuntu/Debian)**. If you are running this locally on **Windows**, please install Docker Desktop for Windows, use the HashiCorp installer for Terraform, and the official Windows MSI for AWS CLI.
+
 Make sure your Jenkins Server (or local agent) has the necessary tools installed globally:
-1. **AWS CLI:** `sudo apt install awscli` (configure root access with `aws configure` initially if needed)
-2. **Terraform:** Follow the official HashiCorp installation guide.
-3. **Docker:** `sudo apt install docker.io` (Important: Ensure the `jenkins` user is given permissions by adding it to the `docker` group)
+1. **AWS CLI:** `sudo apt install awscli` (For Windows: Download the AWS CLI MSI installer)
+2. **Terraform:** Follow the official HashiCorp installation guide for your OS.
+3. **Docker:** `sudo apt install docker.io` (For Windows: Install Docker Desktop) - *Important for Linux: Ensure the `jenkins` user is given permissions by adding it to the `docker` group*
 4. **kubectl:** Follow the Kubernetes official installation guide.
 5. **Helm:** Follow the Helm official installation guide.
 6. **Security Scanners:** Install `sonar-scanner`, `trivy`, and `checkov` binaries on the server.
